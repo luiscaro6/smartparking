@@ -19,6 +19,12 @@ Adafruit_SSD1306 display(ANCHO_PANTALLA, ALTO_PANTALLA, &Wire, -1);
 
 int linea = 20;
 
+/* FUNCION ConfigurarOLED
+ * 
+ * Entradas: ninguna
+ * Funcion: Inicializa el display OLED y coloca el texto preparando en la parte superior.
+ */
+ 
 void ConfigurarOLED(){
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
@@ -31,6 +37,12 @@ void ConfigurarOLED(){
   Enviardatos("OLED listo", 1);
 }
 
+/* FUNCION ConfigurarWiFi 
+ * 
+ * Entradas: ninguna
+ * Funcion: Conecta la placa a WiFi, establece los certificados SSL y obtiene la hora de un servidor NTP.
+ */
+ 
 void ConfigurarWifi(){
   configTime(0, 0, "pool.ntp.org");      //Establece la fuente horaria
   secured_client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
@@ -39,11 +51,10 @@ void ConfigurarWifi(){
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED)
   {
-    Enviardatos(".", 0);
+    Serial.print(".");
     delay(500);
   }
-  Serial.print("\nConectado a la red Wifi. Direccion IP: ");
-  Serial.println(WiFi.localIP());
+  Enviardatos("Conectado", 1);
   time_t now = time(nullptr); //Recupera la hora del servidor NTP
   Serial.println(now);
 }
@@ -54,13 +65,12 @@ void Enviardatos(String dato, int modo){
     display.setCursor(5, linea); 
     display.print(dato);
     display.display();
-    linea = linea + 9;
   } else if (modo == 0){
     Serial.print(dato);
     display.print(dato);
     display.display();
   }
-
+    linea = linea + 9;
 
   }
 
