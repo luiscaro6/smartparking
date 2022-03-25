@@ -9,8 +9,9 @@
 #define WIFI_SSID "Livebox6-188D" //SSID de la red Wifi
 #define WIFI_PASSWORD "56YFnRDTCsP7" //Contraseña de la red Wifi
 #define BOT_TOKEN "5084575645:AAFYehTTPSV049yUlBJO3RjXTUfhAY6LP8M" //Token del bot de Telegram
-#define ANCHO_PANTALLA 128 // ancho pantalla OLED
-#define ALTO_PANTALLA 64 // alto pantalla OLED
+#define ANCHO_PANTALLA 128 // Ancho pantalla OLED
+#define ALTO_PANTALLA 64 // Alto pantalla OLED
+#define DIRECCION_I2C 0x3C // Direccion 0x3C
 
 WiFiClientSecure secured_client;
 X509List cert(TELEGRAM_CERTIFICATE_ROOT);
@@ -26,7 +27,7 @@ int linea = 20;
  */
  
 void ConfigurarOLED(){
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.begin(SSD1306_SWITCHCAPVCC, DIRECCION_I2C);
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
