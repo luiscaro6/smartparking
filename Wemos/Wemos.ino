@@ -8,20 +8,22 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 
 #define WIFI_SSID "Livebox6-188D" //SSID de la red Wifi
 #define WIFI_PASSWORD "56YFnRDTCsP7" //Contraseña de la red Wifi
-#define BOT_TOKEN "5084575645:AAFYehTTPSV049yUlBJO3RjXTUfhAY6LP8M" //Token del bot de Telegram
+#define BOT_TOKEN "5175736759:AAFvgvtX_Q-UjpOJ4aX_HTE7oTRBZ0Lu2Dk" //Token del bot de Telegram
+#define ID_LUIS "536826985" //Id de Luis en Telegram
 #define ANCHO_PANTALLA 128 // Ancho pantalla OLED
 #define ALTO_PANTALLA 64 // Alto pantalla OLED
 #define DIRECCION_I2C 0x3C // Direccion 0x3C
 
-WiFiClientSecure secured_client;
+WiFiClientSecure client;
 X509List cert(TELEGRAM_CERTIFICATE_ROOT);
-UniversalTelegramBot bot(BOT_TOKEN, secured_client);
+UniversalTelegramBot bot(BOT_TOKEN, client);
 Adafruit_SSD1306 display(ANCHO_PANTALLA, ALTO_PANTALLA, &Wire, -1);
 
 int linea = 20;
@@ -52,7 +54,7 @@ void ConfigurarOLED(){
  
 void ConfigurarWifi(){
   configTime(0, 0, "pool.ntp.org");      //Establece la fuente horaria
-  secured_client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
+  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
   Enviardatos("Conectando a la red ", 1);
   Enviardatos(WIFI_SSID, 0);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -86,6 +88,7 @@ void setup() {
   Serial.println("\r\n");
   ConfigurarOLED();
   ConfigurarWifi();
+  bot.sendMessage(ID_LUIS, "Hola wena tarde", "");
 }
 
 void loop() {
