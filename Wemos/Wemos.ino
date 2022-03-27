@@ -1,3 +1,4 @@
+
 /*+++++++++++++++++++++++++++++++++++++++++
 +      PROYECTO PARKING INTELIGENTE       +
 +      Ultima modificacion: 27/03/2022    +
@@ -12,6 +13,9 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
+#include <ESP8266Ping.h>
+
+
 
 #define WIFI_SSID "Livebox6-188D" //SSID de la red Wifi
 #define WIFI_PASSWORD "56YFnRDTCsP7" //Contraseña de la red Wifi
@@ -54,18 +58,42 @@ void ConfigurarOLED(){
  
 void ConfigurarWifi(){
   configTime(0, 0, "pool.ntp.org");      //Establece la fuente horaria
-  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
   Enviardatos("Conectando a la red ", 1);
-  Enviardatos(WIFI_SSID, 0);
+  Serial.print(WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     delay(500);
+    if (WiFi.status() == WL_CONNECT_FAILED) {
+      ErrorConexion("Contrasena incorrecta");
+    } else if (WiFi.status() == WL_NO_SSID_AVAIL) {
+      ErrorConexion("Red no encontrada"); 
+    }
   }
-  Enviardatos("Conectado", 1);
+  Enviardatos("Conexión WiFi lista", 1);
   time_t now = time(nullptr); //Recupera la hora del servidor NTP
   Serial.println(now);
+}
+
+void ConectarTelegram(){
+  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza  
+  }
+
+void ErrorConexion(String motivo){
+  display.clearDisplay();
+  display.setCursor(10, 5);
+  display.println("ERROR CONEXION WIFI");
+  display.setCursor(0,20);
+  display.print("SSID: ");
+  display.println(WIFI_SSID);
+  display.print("ERROR: ");
+  display.println(motivo);
+  if (WiFi.status() == WL_CONNECT_FAILED) {
+    display.print("Contrasena: ");
+    display.println(WIFI_PASSWORD);
+  }
+  display.display();
 }
 
 void Enviardatos(String dato, int modo){
@@ -88,7 +116,7 @@ void setup() {
   Serial.println("\r\n");
   ConfigurarOLED();
   ConfigurarWifi();
-  bot.sendMessage(ID_LUIS, "Hola wena tarde", "");
+  //ConectarTelegram();
 }
 
 void loop() {
