@@ -1,3 +1,9 @@
+/*+++++++++++++++++++++++++++++++++++++++++
++      PROYECTO PARKING INTELIGENTE       +
++      Ultima modificacion: 27/03/2022    +
+++++++++++++++++++++++++++++++++++++++++++*/
+
+
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -62,6 +68,7 @@ void ConfigurarWifi(){
 
 void Enviardatos(String dato, int modo){
   if (modo == 1){
+    Serial.print("\r\n");
     Serial.print(dato);
     display.setCursor(5, linea); 
     display.print(dato);
@@ -72,11 +79,11 @@ void Enviardatos(String dato, int modo){
     display.display();
   }
     linea = linea + 9;
-
-  }
+}
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("\r\n");
   ConfigurarOLED();
   ConfigurarWifi();
 }
