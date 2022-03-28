@@ -20,9 +20,11 @@
 #define WIFI_PASSWORD "56YFnRDTCsP7" //Contraseña de la red Wifi
 #define BOT_TOKEN "5175736759:AAFvgvtX_Q-UjpOJ4aX_HTE7oTRBZ0Lu2Dk" //Token del bot de Telegram
 #define ID_LUIS "536826985" //Id de Luis en Telegram
+#define ID_ADMIN "-1001635337717" //ID del canal de Admin
 #define ANCHO_PANTALLA 128 // Ancho pantalla OLED
 #define ALTO_PANTALLA 64 //* Alto pantalla OLED
 #define DIRECCION_I2C 0x3C // Direccion 0x3C
+
 
 WiFiClientSecure client;
 X509List cert(TELEGRAM_CERTIFICATE_ROOT);
@@ -107,7 +109,9 @@ void ErrorConexion(String motivo){
 }
 
 void ConectarTelegram(){
-  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza  
+  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
+  bot.sendMessage(ID_ADMIN, "Hola, son las " + timeClient.getFormattedTime() + ". El parking se acaba de iniciar y está listo. A continuación se detalla el estado:", "");
+  EnviarResumen();  
 }
 
 void ConectarPlaca() { //Esta función no tiene utilidad ahora mismo
@@ -116,27 +120,120 @@ void ConectarPlaca() { //Esta función no tiene utilidad ahora mismo
 
 void ActualizarHora(){
   timeClient.update(); 
-  display.setCursor(80, 5);
+  display.setCursor(70, 5);
   display.setTextColor(WHITE, BLACK);
   display.print(timeClient.getFormattedTime());  
   display.display();
 }
 
-void ActualizarEstado(){
+void ActualizarPantalla(){
   estado = plaza1_estado + plaza2_estado + plaza3_estado;
   if (estado == 3){
     display.setCursor(10, 5);
     display.setTextColor(WHITE, BLACK);
     display.print("COMPLETO");  
-    display.display();
   }
   if (estado < 3){
     display.setCursor(10, 5);
     display.setTextColor(WHITE, BLACK);
     display.print("  LIBRE  ");  
-    display.display();
   }
+  if (plaza1_estado == 1){
+    display.setCursor(10, 20);
+    display.setTextColor(WHITE, BLACK);
+    display.print("PLAZA 1: OCUPADA");  
+  } else {
+    display.setCursor(10, 20);
+    display.setTextColor(WHITE, BLACK);    
+    display.print("PLAZA 1: LIBRE");      
+  }
+  if (plaza2_estado == 1){
+    display.setCursor(10, 30);
+    display.setTextColor(WHITE, BLACK);    
+    display.print("PLAZA 2: OCUPADA");  
+  } else {
+    display.setCursor(10, 30);
+    display.setTextColor(WHITE, BLACK);    
+    display.print("PLAZA 2: LIBRE");      
+  }
+  if (plaza3_estado == 1){
+    display.setCursor(10, 40);
+    display.setTextColor(WHITE, BLACK);    
+    display.print("PLAZA 3: OCUPADA");  
+  } else {
+    display.setCursor(10, 40);
+    display.setTextColor(WHITE, BLACK);    
+    display.print("PLAZA 3: LIBRE");      
+  }
+  display.display();
+}
 
+void CambioCoche(int plaza, int accion){
+  if (plaza = 1){
+    if (accion = 1){
+      plaza1_estado = 1;
+      bot.sendMessage(ID_ADMIN, "Un coche acaba de ocupar la plaza 1", "");
+      ActualizarPantalla();
+    }
+    if (accion = 0){
+      plaza1_estado = 0;
+      bot.sendMessage(ID_ADMIN, "La plaza 1 se acaba de liberar", "");
+      ActualizarPantalla();
+    }    
+  }
+  if (plaza = 2){
+    if (accion = 1){
+      plaza2_estado = 1;
+      bot.sendMessage(ID_ADMIN, "Un coche acaba de ocupar la plaza 2", "");
+      ActualizarPantalla();
+    }
+    if (accion = 0){
+      plaza2_estado = 0;
+      bot.sendMessage(ID_ADMIN, "La plaza 2 se acaba de liberar", "");
+      ActualizarPantalla();
+    }    
+  }
+  if (plaza = 3){
+    if (accion = 1){
+      plaza3_estado = 1;
+      bot.sendMessage(ID_ADMIN, "Un coche acaba de ocupar la plaza 3", "");
+      ActualizarPantalla();
+    }
+    if (accion = 0){
+      plaza3_estado = 0;
+      bot.sendMessage(ID_ADMIN, "La plaza 3 se acaba de liberar", "");
+      ActualizarPantalla();
+    }    
+  }    
+}
+
+void EnviarResumen(){
+    String plaza1_texto = "";
+    String plaza2_texto = "";
+    String plaza3_texto = "";
+    String estado_texto = "";
+
+    if (plaza1_estado == 1) {
+      plaza1_texto = "ocupada";
+    } else {
+      plaza1_texto = "libre";
+    }
+    if (plaza2_estado == 1) {
+      plaza2_texto = "ocupada";
+    } else {
+      plaza2_texto = "libre";
+    }
+    if (plaza3_estado == 1) {
+      plaza3_texto = "ocupada";
+    } else {
+      plaza3_texto = "libre";
+    }
+    if (estado == 1) {
+      estado_texto = "completo";
+    } else {
+      estado_texto = "libre";
+    }
+  bot.sendMessage(ID_ADMIN, "El parking actualmente se encuentra " + estado_texto + ". \n La plaza 1 está " + plaza1_texto + ". \n La plaza 2 está " + plaza2_texto + ". \n La plaza 3 está " + plaza3_texto + ".", "");
 }
 
 void setup() {
@@ -149,7 +246,7 @@ void setup() {
   delay(500);
   display.clearDisplay();
   display.display();
-  ActualizarEstado();
+  ActualizarPantalla();
 }
 
 void loop() {
