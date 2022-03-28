@@ -33,10 +33,10 @@ NTPClient timeClient(ntpUDP, "hora.roa.es", 7200);
 
 
 int linea = 20;
-int estado = 0;
-int plaza1_estado = 0;
-int plaza2_estado = 0;
-int plaza3_estado = 0;
+int estado = 0; //Numero de plazas ocupadas
+int plaza1_estado = 0; //1 si ocupada, 0 si vacia
+int plaza2_estado = 0; //1 si ocupada, 0 si vacia
+int plaza3_estado = 0; //1 si ocupado, 0 si vacia
 
 void Enviardatos(String dato, int modo){
   if(linea > 50){
@@ -115,15 +115,28 @@ void ConectarPlaca() { //Esta función no tiene utilidad ahora mismo
 }
 
 void ActualizarHora(){
-  timeClient.update();
-  Serial.println(timeClient.getFormattedTime());  
-  display.setCursor(80, 5);
-  display.setTextColor(WHITE);
-  display.print(timeClient.getFormattedTime());
+  timeClient.update(); 
   display.setCursor(80, 5);
   display.setTextColor(WHITE, BLACK);
   display.print(timeClient.getFormattedTime());  
   display.display();
+}
+
+void ActualizarEstado(){
+  estado = plaza1_estado + plaza2_estado + plaza3_estado;
+  if (estado == 3){
+    display.setCursor(10, 5);
+    display.setTextColor(WHITE, BLACK);
+    display.print("COMPLETO");  
+    display.display();
+  }
+  if (estado < 3){
+    display.setCursor(10, 5);
+    display.setTextColor(WHITE, BLACK);
+    display.print("  LIBRE  ");  
+    display.display();
+  }
+
 }
 
 void setup() {
@@ -136,6 +149,7 @@ void setup() {
   delay(500);
   display.clearDisplay();
   display.display();
+  ActualizarEstado();
 }
 
 void loop() {
