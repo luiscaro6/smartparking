@@ -1,6 +1,6 @@
 /*+++++++++++++++++++++++++++++++++++++++++
 +      PROYECTO PARKING INTELIGENTE       +
-+      Ultima modificacion: 27/03/2022    +
++      Ultima modificacion: 28/03/2022    +
 ++++++++++++++++++++++++++++++++++++++++++*/
 
 
@@ -21,7 +21,7 @@
 #define BOT_TOKEN "5175736759:AAFvgvtX_Q-UjpOJ4aX_HTE7oTRBZ0Lu2Dk" //Token del bot de Telegram
 #define ID_LUIS "536826985" //Id de Luis en Telegram
 #define ANCHO_PANTALLA 128 // Ancho pantalla OLED
-#define ALTO_PANTALLA 64 // Alto pantalla OLED
+#define ALTO_PANTALLA 64 //* Alto pantalla OLED
 #define DIRECCION_I2C 0x3C // Direccion 0x3C
 
 WiFiClientSecure client;
@@ -33,6 +33,29 @@ NTPClient timeClient(ntpUDP, "hora.roa.es", 7200);
 
 
 int linea = 20;
+int estado = 0;
+int plaza1_estado = 0;
+int plaza2_estado = 0;
+int plaza3_estado = 0;
+
+void Enviardatos(String dato, int modo){
+  if(linea > 50){
+    ConfigurarOLED();
+    linea = 20;  
+  }
+  if (modo == 1){
+    Serial.print("\r\n");
+    Serial.print(dato);
+    display.setCursor(5, linea); 
+    display.print(dato);
+    display.display();
+  } else if (modo == 0){
+    Serial.print(dato);
+    display.print(dato);
+    display.display();
+  }
+    linea = linea + 9;
+}
 
 void ConfigurarOLED(){
   display.begin(SSD1306_SWITCHCAPVCC, DIRECCION_I2C);
@@ -65,11 +88,6 @@ void ConfigurarWifi(){
   time_t now = time(nullptr); //Recupera la hora del servidor NTP
   timeClient.begin();
   timeClient.update();
- 
-}
-
-void ConectarTelegram(){
-  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza  
 }
 
 void ErrorConexion(String motivo){
@@ -88,27 +106,24 @@ void ErrorConexion(String motivo){
   display.display();
 }
 
+void ConectarTelegram(){
+  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza  
+}
+
 void ConectarPlaca() { //Esta función no tiene utilidad ahora mismo
   Enviardatos("Placa lista", 1);  
 }
 
-void Enviardatos(String dato, int modo){
-  if(linea > 50){
-    ConfigurarOLED();
-    linea = 20;  
-  }
-  if (modo == 1){
-    Serial.print("\r\n");
-    Serial.print(dato);
-    display.setCursor(5, linea); 
-    display.print(dato);
-    display.display();
-  } else if (modo == 0){
-    Serial.print(dato);
-    display.print(dato);
-    display.display();
-  }
-    linea = linea + 9;
+void ActualizarHora(){
+  timeClient.update();
+  Serial.println(timeClient.getFormattedTime());  
+  display.setCursor(80, 5);
+  display.setTextColor(WHITE);
+  display.print(timeClient.getFormattedTime());
+  display.setCursor(80, 5);
+  display.setTextColor(WHITE, BLACK);
+  display.print(timeClient.getFormattedTime());  
+  display.display();
 }
 
 void setup() {
@@ -118,8 +133,12 @@ void setup() {
   ConfigurarWifi();
   ConectarTelegram();
   ConectarPlaca();
+  delay(500);
+  display.clearDisplay();
+  display.display();
 }
 
 void loop() {
-
+  ActualizarHora();
+  delay(1000);
 }
