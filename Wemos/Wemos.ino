@@ -15,8 +15,8 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 
-#define WIFI_SSID "POCO M3 Pro 5G de Luisito" //SSID de la red Wifi
-#define WIFI_PASSWORD "lhxx5332" //Contraseña de la red Wifi
+#define WIFI_SSID "Livebox6-188D" //SSID de la red Wifi
+#define WIFI_PASSWORD "56YFnRDTCsP7" //Contraseña de la red Wifi
 #define BOT_TOKEN "5175736759:AAFvgvtX_Q-UjpOJ4aX_HTE7oTRBZ0Lu2Dk" //Token del bot de Telegram
 #define ID_LUIS "536826985" //Id de Luis en Telegram
 #define ID_ADMIN "-1001635337717" //ID del canal de Admin
@@ -107,21 +107,21 @@ void ErrorConexion(String motivo){
   display.display();
 }
 
-void ConectarTelegram(){
-  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
-  bot.sendMessage(ID_ADMIN, "Hola, son las " + timeClient.getFormattedTime() + ". El parking se acaba de iniciar y está listo. A continuación se detalla el estado:", "");
-  EnviarResumen();  
-}
-
 void ConectarPlaca() { //Esta función no tiene utilidad ahora mismo
   Enviardatos("Placa lista", 1);  
 }
 
 void ActualizarHora(){
-  timeClient.update(); 
+  timeClient.update();
+  String Horaentera = timeClient.getFormattedTime();
+  int separardospuntos = Horaentera.indexOf(":");
+  String Hora = Horaentera.substring(0, separardospuntos);
+  String Minutos = Horaentera.substring(5, separardospuntos);    
+  String Segundos = Horaentera.substring(10, separardospuntos); 
+  String hhmm = Hora + Minutos;
   display.setCursor(70, 5);
   display.setTextColor(WHITE, BLACK);
-  display.print(timeClient.getFormattedTime());  
+  display.print(hhmm);  
   display.display();
 }
 
@@ -235,18 +235,28 @@ void EnviarResumen(){
   bot.sendMessage(ID_ADMIN, "El parking actualmente se encuentra " + estado_texto + ". \n La plaza 1 está " + plaza1_texto + ". \n La plaza 2 está " + plaza2_texto + ". \n La plaza 3 está " + plaza3_texto + ".", "");
 }
 
-void RecibirMensajes(int numNewMessages) {
-  Serial.println(String(numNewMessages));
+void RecibirMensajes(int numMensajesNuevos) {
+  Serial.println(String(numMensajesNuevos));
 
-  for (int i=0; i<numNewMessages; i++) {
+  for (int i=0; i<numMensajesNuevos; i++) {
     String chat_id = String(bot.messages[i].chat_id);
     String text = bot.messages[i].text;
-    Serial.println(text);
-    if (text = "hola"){
-      bot.sendMessage(bot.messages[i].chat_id, "Recibido", ""); 
-    }
     String from_name = bot.messages[i].from_name;
+    Serial.println("Mensaje " + text + " recibido de " + from_name + " con ID " + chat_id);
+    if (text == "/start"){
+      String Bienvenida = "Hola " + from_name + ".\n";
+      Bienvenida += "Te damos la bienvenida al sistema de parking inteligente.\n";
+      Bienvenida += "A continuación te detallamos los comandos que puedes utilizar aquí\n\n";
+      Bienvenida += "/help : Ayuda de comandos\n"; 
+      bot.sendMessage(chat_id, Bienvenida, "");      
+    }
+    if (text == "/help"){
+      String Ayuda = "A continuación te detallamos los comandos que puedes utilizar aquí\n\n";
+      Ayuda += "/help : Ayuda de comandos\n"; 
+      bot.sendMessage(chat_id, Ayuda, "");      
+    }
 
+    
   }
 }
 
@@ -255,7 +265,9 @@ void setup() {
   Serial.println("\r\n");
   ConfigurarOLED();
   ConfigurarWifi();
-  ConectarTelegram();
+  client.setTrustAnchors(&cert); //Establece los certificados de telegram como de confianza
+  bot.sendMessage(ID_ADMIN, "Hola, son las " + timeClient.getFormattedTime() + ". El parking se acaba de iniciar y está listo. A continuación se detalla el estado:", "");
+  EnviarResumen();  
   ConectarPlaca();
   delay(500);
   display.clearDisplay();
@@ -265,11 +277,11 @@ void setup() {
 
 void loop() {
   ActualizarHora();
-  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-  while(numNewMessages) {
-    Serial.println("got response");
-    RecibirMensajes(numNewMessages);
-    numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  int numMensajesNuevos = bot.getUpdates(bot.last_message_received + 1);
+  while(numMensajesNuevos) {
+    Serial.println("Nuevo mensaje");
+    RecibirMensajes(numMensajesNuevos);
+    numMensajesNuevos = bot.getUpdates(bot.last_message_received + 1);
   }
   delay(1000);
 }
