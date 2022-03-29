@@ -13,11 +13,10 @@
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
-#include <ESP8266Ping.h>
 #include <NTPClient.h>
 
-#define WIFI_SSID "Livebox6-188D" //SSID de la red Wifi
-#define WIFI_PASSWORD "56YFnRDTCsP7" //Contraseña de la red Wifi
+#define WIFI_SSID "POCO M3 Pro 5G de Luisito" //SSID de la red Wifi
+#define WIFI_PASSWORD "lhxx5332" //Contraseña de la red Wifi
 #define BOT_TOKEN "5175736759:AAFvgvtX_Q-UjpOJ4aX_HTE7oTRBZ0Lu2Dk" //Token del bot de Telegram
 #define ID_LUIS "536826985" //Id de Luis en Telegram
 #define ID_ADMIN "-1001635337717" //ID del canal de Admin
@@ -236,6 +235,21 @@ void EnviarResumen(){
   bot.sendMessage(ID_ADMIN, "El parking actualmente se encuentra " + estado_texto + ". \n La plaza 1 está " + plaza1_texto + ". \n La plaza 2 está " + plaza2_texto + ". \n La plaza 3 está " + plaza3_texto + ".", "");
 }
 
+void RecibirMensajes(int numNewMessages) {
+  Serial.println(String(numNewMessages));
+
+  for (int i=0; i<numNewMessages; i++) {
+    String chat_id = String(bot.messages[i].chat_id);
+    String text = bot.messages[i].text;
+    Serial.println(text);
+    if (text = "hola"){
+      bot.sendMessage(bot.messages[i].chat_id, "Recibido", ""); 
+    }
+    String from_name = bot.messages[i].from_name;
+
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("\r\n");
@@ -251,5 +265,11 @@ void setup() {
 
 void loop() {
   ActualizarHora();
+  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  while(numNewMessages) {
+    Serial.println("got response");
+    RecibirMensajes(numNewMessages);
+    numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  }
   delay(1000);
 }
