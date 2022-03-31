@@ -35,9 +35,12 @@ NTPClient timeClient(ntpUDP, "hora.roa.es", 7200);
 
 int linea = 20;
 int estado = 0; //Numero de plazas ocupadas
-int plaza1_estado = 0; //1 si ocupada, 0 si vacia
-int plaza2_estado = 0; //1 si ocupada, 0 si vacia
-int plaza3_estado = 0; //1 si ocupado, 0 si vacia
+bool plaza1_estado = 0; //1 si ocupada, 0 si vacia
+String plaza1_id = "0";
+bool plaza2_estado = 0; //1 si ocupada, 0 si vacia
+String plaza2_id = "0";
+bool plaza3_estado = 0; //1 si ocupado, 0 si vacia
+String plaza3_id = "0";
 
 void Enviardatos(String dato, int modo){
   if(linea > 50){
@@ -168,37 +171,37 @@ void ActualizarPantalla(){
 }
 
 void CambioCoche(int plaza, int accion){
-  if (plaza = 1){
-    if (accion = 1){
+  if (plaza == 1){
+    if (accion == 1){
       plaza1_estado = 1;
       bot.sendMessage(ID_ADMIN, "Un coche acaba de ocupar la plaza 1", "");
       ActualizarPantalla();
     }
-    if (accion = 0){
+    if (accion == 0){
       plaza1_estado = 0;
       bot.sendMessage(ID_ADMIN, "La plaza 1 se acaba de liberar", "");
       ActualizarPantalla();
     }    
   }
-  if (plaza = 2){
-    if (accion = 1){
+  if (plaza == 2){
+    if (accion == 1){
       plaza2_estado = 1;
       bot.sendMessage(ID_ADMIN, "Un coche acaba de ocupar la plaza 2", "");
       ActualizarPantalla();
     }
-    if (accion = 0){
+    if (accion == 0){
       plaza2_estado = 0;
       bot.sendMessage(ID_ADMIN, "La plaza 2 se acaba de liberar", "");
       ActualizarPantalla();
     }    
   }
-  if (plaza = 3){
-    if (accion = 1){
+  if (plaza == 3){
+    if (accion == 1){
       plaza3_estado = 1;
       bot.sendMessage(ID_ADMIN, "Un coche acaba de ocupar la plaza 3", "");
       ActualizarPantalla();
     }
-    if (accion = 0){
+    if (accion == 0){
       plaza3_estado = 0;
       bot.sendMessage(ID_ADMIN, "La plaza 3 se acaba de liberar", "");
       ActualizarPantalla();
@@ -236,8 +239,6 @@ void EnviarResumen(){
 }
 
 void RecibirMensajes(int numMensajesNuevos) {
-  Serial.println(String(numMensajesNuevos));
-
   for (int i=0; i<numMensajesNuevos; i++) {
     String chat_id = String(bot.messages[i].chat_id);
     String text = bot.messages[i].text;
@@ -247,16 +248,88 @@ void RecibirMensajes(int numMensajesNuevos) {
       String Bienvenida = "Hola " + from_name + ".\n";
       Bienvenida += "Te damos la bienvenida al sistema de parking inteligente.\n";
       Bienvenida += "A continuación te detallamos los comandos que puedes utilizar aquí\n\n";
-      Bienvenida += "/help : Ayuda de comandos\n"; 
+      Bienvenida += "/help : Ayuda de comandos\n";
+      Bienvenida += "/aparcar : Comenzar un aparcamiento\n";
+      Bienvenida += "/info : Consultar si puedes aparcar\n";
+      Bienvenida += "/salir : Terminar tu aparcamiento\n";
+      Bienvenida += "/info_parking : Ver el estado de tu sesión de aparcamiento actual\n"; 
       bot.sendMessage(chat_id, Bienvenida, "");      
     }
     if (text == "/help"){
       String Ayuda = "A continuación te detallamos los comandos que puedes utilizar aquí\n\n";
-      Ayuda += "/help : Ayuda de comandos\n"; 
+      Ayuda += "/help : Ayuda de comandos\n";
+      Ayuda += "/aparcar : Comenzar un aparcamiento\n";
+      Ayuda += "/info : Consultar si puedes aparcar o no\n";
+      Ayuda += "/salir : Terminar tu aparcamiento\n";
+      Ayuda += "/info_parking : Ver el estado de tu sesión de aparcamiento actual";  
       bot.sendMessage(chat_id, Ayuda, "");      
     }
-
-    
+    if (text == "/aparcar"){
+      String keyboardJson = "[[{ \"text\" : \"Continuar\", \"callback_data\" : \"Iniciar aparcamiento\" }],[{ \"text\" : \"Cancelar\", \"callback_data\" : \"Cancelar\" }]]";
+      String Aparcar = "Vas a iniciar una sesión de aparcamiento.\n";
+      Aparcar += "¿Estás seguro?\n";
+      Aparcar += "Si pulsas en 'Continuar' se abrirá la barrera para que dejes tu coche y en unos segundos te llegará la información\n";  
+      bot.sendMessageWithInlineKeyboard(chat_id, Aparcar, "", keyboardJson);      
+    }
+    if (text == "Cancelar"){
+      bot.sendMessage(chat_id, "Cancelado", "");
+    }
+    if (text == "Iniciar aparcamiento"){
+      int Error = 0;
+      if (plaza1_id == chat_id){
+        Error += 1;
+      }
+      if (plaza2_id == chat_id){
+        Error += 1;
+      }
+      if (plaza3_id == chat_id){
+        Error += 1;
+      }            
+      if (Error > 0){
+          String Error = "Actualmente tiene otra sesion de aparcamiento iniciada. \n";
+          Error += "Consulta su estado con /info_parking";
+          bot.sendMessage(chat_id, Error, "");
+      }else if (plaza1_estado == 0){
+        plaza1_id = chat_id;
+        CambioCoche(1, 1);
+        String Aparcamiento = "Se ha iniciado tu aparcamiento correctamente en la plaza 1.\n";
+        Aparcamiento += "Actualmente son las ";
+        Aparcamiento += timeClient.getFormattedTime();
+        Aparcamiento += "\n¡Gracias!";
+        bot.sendMessage(chat_id, Aparcamiento, "");
+        String Admin = "Acaba de llegar un coche a la plaza 1\n";
+        Admin += "Su ID es ";
+        Admin += chat_id;
+        bot.sendMessage(ID_ADMIN, Admin, "");            
+      } else if (plaza2_estado == 0){
+        plaza2_id = chat_id;
+        CambioCoche(2, 1);
+        String Aparcamiento = "Se ha iniciado tu aparcamiento correctamente en la plaza 2.\n";
+        Aparcamiento += "Actualmente son las ";
+        Aparcamiento += timeClient.getFormattedTime();
+        Aparcamiento += "\n¡Gracias!";
+        bot.sendMessage(chat_id, Aparcamiento, "");
+        String Admin = "Acaba de llegar un coche a la plaza 2\n";
+        Admin += "Su ID es ";
+        Admin += chat_id;
+        bot.sendMessage(ID_ADMIN, Admin, "");            
+      } else if (plaza3_estado == 0){
+        plaza3_id = chat_id;
+        CambioCoche(3, 1);
+        String Aparcamiento = "Se ha iniciado tu aparcamiento correctamente en la plaza 3.\n";
+        Aparcamiento += "Actualmente son las ";
+        Aparcamiento += timeClient.getFormattedTime();
+        Aparcamiento += "\n¡Gracias!";
+        bot.sendMessage(chat_id, Aparcamiento, "");
+        String Admin = "Acaba de llegar un coche a la plaza 3\n";
+        Admin += "Su ID es ";
+        Admin += chat_id;
+        bot.sendMessage(ID_ADMIN, Admin, ""); 
+      } else {
+        bot.sendMessage(chat_id, "Lo sentimos, pero nuestro parking está completo actualmente", "");  
+      }
+      
+    }    
   }
 }
 
