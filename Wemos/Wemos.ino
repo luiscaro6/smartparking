@@ -37,10 +37,13 @@ int linea = 20;
 int estado = 0; //Numero de plazas ocupadas
 bool plaza1_estado = 0; //1 si ocupada, 0 si vacia
 String plaza1_id = "0";
+String plaza1_hora = "00:00:00";
 bool plaza2_estado = 0; //1 si ocupada, 0 si vacia
 String plaza2_id = "0";
+String plaza2_hora = "00:00:00";
 bool plaza3_estado = 0; //1 si ocupado, 0 si vacia
 String plaza3_id = "0";
+String plaza3_hora = "00:00:00";
 
 void Enviardatos(String dato, int modo){
   if(linea > 50){
@@ -241,7 +244,7 @@ void EnviarResumen(){ //Esta función se utiliza para enviar un mensaje con el e
     } else {
       plaza3_texto = "libre";
     }
-    if (estado == 1) {
+    if (estado == 3) {
       estado_texto = "completo";
     } else {
       estado_texto = "libre";
@@ -276,16 +279,16 @@ void RecibirMensajes(int numMensajesNuevos) { //Esta función se encarga de la r
       bot.sendMessage(chat_id, Ayuda, "");      
     }
     if (text == "/aparcar"){
-      String keyboardJson = "[[{ \"text\" : \"Continuar\", \"callback_data\" : \"Iniciar aparcamiento\" }],[{ \"text\" : \"Cancelar\", \"callback_data\" : \"Cancelar\" }]]";
+      String keyboardJson = "[[{ \"text\" : \"Continuar\", \"callback_data\" : \"Iniciaraparcar\" }],[{ \"text\" : \"Cancelar\", \"callback_data\" : \"Cancelaraparcar\" }]]";
       String Aparcar = "Vas a iniciar una sesión de aparcamiento.\n";
       Aparcar += "¿Estás seguro?\n";
       Aparcar += "Si pulsas en 'Continuar' se abrirá la barrera para que dejes tu coche y en unos segundos te llegará la información\n";  
       bot.sendMessageWithInlineKeyboard(chat_id, Aparcar, "", keyboardJson);      
     }
-    if (text == "Cancelar"){
+    if (text == "Cancelaraparcar"){
       bot.sendMessage(chat_id, "Cancelado", "");
     }
-    if (text == "Iniciar aparcamiento"){
+    if (text == "Iniciaraparcar"){
       int Error = 0;
       if (plaza1_id == chat_id){
         Error += 1;
