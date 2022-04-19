@@ -1,6 +1,6 @@
 /*+++++++++++++++++++++++++++++++++++++++++
 +      PROYECTO PARKING INTELIGENTE       +
-+      Ultima modificacion: 01/04/2022    +
++      Ultima modificacion: 19/04/2022    +
 ++++++++++++++++++++++++++++++++++++++++++*/
 
 
@@ -37,13 +37,18 @@ int linea = 20;
 int estado = 0; //Numero de plazas ocupadas
 bool plaza1_estado = 0; //1 si ocupada, 0 si vacia
 String plaza1_id = "0";
-String plaza1_hora = "00:00:00";
+int plaza1_hora = 0;
+int plaza1_minuto = 0;
 bool plaza2_estado = 0; //1 si ocupada, 0 si vacia
 String plaza2_id = "0";
-String plaza2_hora = "00:00:00";
+int plaza2_hora = 0;
+int plaza2_minuto = 0;
 bool plaza3_estado = 0; //1 si ocupado, 0 si vacia
 String plaza3_id = "0";
-String plaza3_hora = "00:00:00";
+int plaza3_hora = 0;
+int plaza3_minuto = 0;
+int hora_actual = 0;
+int minuto_actual = 0;
 
 void Enviardatos(String dato, int modo){
   if(linea > 50){
@@ -182,42 +187,63 @@ void CambioCoche(int plaza, int accion, int ID_chat){
   if (plaza == 1){
     if (accion == 1){
       plaza1_estado = 1;
-      String Admin = "Un coche acaba de ocupar la plaza 1. Su ID es: ");
+      String Admin = ("Un coche acaba de ocupar la plaza 1. Su ID es: ");
       Admin += ID_chat;
       bot.sendMessage(ID_ADMIN, Admin, "");
       ActualizarPantalla();
     }
     if (accion == 0){
       plaza1_estado = 0;
-      bot.sendMessage(ID_ADMIN, "La plaza 1 se acaba de liberar", "");
+      int plaza_horas = hora_actual - plaza1_hora;
+      int plaza_minutos = abs(minuto_actual - plaza1_minuto);
+      String mensajesalida = "La plaza 1 se acaba de liberar. El coche ha estado en el aparcamiento durante ";
+      String mensajesalida += plaza_horas;
+      String mensajesalida += " horas y ";
+      String mensajesalida += plaza_minuto;
+      String mensajesalida += " minutos.";      
+      bot.sendMessage(ID_ADMIN, mensajesalida, "");
       ActualizarPantalla();
     }    
   }
   if (plaza == 2){
     if (accion == 1){
       plaza2_estado = 1;
-      String Admin = "Un coche acaba de ocupar la plaza 2. Su ID es: ");
+      String Admin = ("Un coche acaba de ocupar la plaza 2. Su ID es: ");
       Admin += ID_chat;
       bot.sendMessage(ID_ADMIN, Admin, "");
       ActualizarPantalla();
     }
     if (accion == 0){
       plaza2_estado = 0;
-      bot.sendMessage(ID_ADMIN, "La plaza 2 se acaba de liberar", "");
+      int plaza_horas = hora_actual - plaza1_hora;
+      int plaza_minutos = abs(minuto_actual - plaza1_minuto);
+      String mensajesalida = "La plaza 2 se acaba de liberar. El coche ha estado en el aparcamiento durante ";
+      String mensajesalida += plaza_horas;
+      String mensajesalida += " horas y ";
+      String mensajesalida += plaza_minuto;
+      String mensajesalida += " minutos.";
+      bot.sendMessage(ID_ADMIN, mensajesalida, "");
       ActualizarPantalla();
     }    
   }
   if (plaza == 3){
     if (accion == 1){
       plaza3_estado = 1;
-      String Admin = "Un coche acaba de ocupar la plaza 3. Su ID es: ");
+      String Admin = ("Un coche acaba de ocupar la plaza 3. Su ID es: ");
       Admin += ID_chat;
       bot.sendMessage(ID_ADMIN, Admin, "");
       ActualizarPantalla();
     }
     if (accion == 0){
       plaza3_estado = 0;
-      bot.sendMessage(ID_ADMIN, "La plaza 3 se acaba de liberar", "");
+      int plaza_horas = hora_actual - plaza1_hora;
+      int plaza_minutos = abs(minuto_actual - plaza1_minuto);
+      String mensajesalida = "La plaza 3 se acaba de liberar. El coche ha estado en el aparcamiento durante ";
+      String mensajesalida += plaza_horas;
+      String mensajesalida += " horas y ";
+      String mensajesalida += plaza_minuto;
+      String mensajesalida += " minutos.";
+      bot.sendMessage(ID_ADMIN, mensajesalida, "");
       ActualizarPantalla();
     }    
   }    
@@ -304,7 +330,10 @@ void RecibirMensajes(int numMensajesNuevos) { //Esta función se encarga de la r
           Error += "Consulta su estado con /info_parking";
           bot.sendMessage(chat_id, Error, "");
       }else if (plaza1_estado == 0){
+        timeClient.update();
         plaza1_id = chat_id;
+        plaza1_hora = timeClient.getHours;
+        plaza1_minuto = timeClient.getMinutes;
         CambioCoche(1, 1, chat_id);
         String Aparcamiento = "Se ha iniciado tu aparcamiento correctamente en la plaza 1.\n";
         Aparcamiento += "Actualmente son las ";
@@ -313,6 +342,8 @@ void RecibirMensajes(int numMensajesNuevos) { //Esta función se encarga de la r
         bot.sendMessage(chat_id, Aparcamiento, "");          
       } else if (plaza2_estado == 0){
         plaza2_id = chat_id;
+        plaza2_hora = timeClient.getHours;
+        plaza2_minuto = timeClient.getMinutes;
         CambioCoche(2, 1, chat_id);
         String Aparcamiento = "Se ha iniciado tu aparcamiento correctamente en la plaza 2.\n";
         Aparcamiento += "Actualmente son las ";
@@ -321,6 +352,8 @@ void RecibirMensajes(int numMensajesNuevos) { //Esta función se encarga de la r
         bot.sendMessage(chat_id, Aparcamiento, "");          
       } else if (plaza3_estado == 0){
         plaza3_id = chat_id;
+        plaza3_hora = timeClient.getHours;
+        plaza3_minuto = timeClient.getMinutes;
         CambioCoche(3, 1, chat_id);
         String Aparcamiento = "Se ha iniciado tu aparcamiento correctamente en la plaza 3.\n";
         Aparcamiento += "Actualmente son las ";
