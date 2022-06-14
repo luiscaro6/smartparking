@@ -1,4 +1,7 @@
 #include <NewPing.h>
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+
 /*+++++++++++++++++++++++++++++++++
 +   PROYECTO PUENTE DE LA PEPA    +
 + Ultima modificación: 10/06/2022 +
@@ -6,7 +9,7 @@
 
 #define PIN_LDR A1 //El LDR esta conectado al pin analogico 1
 #define PIN_RELE 8 //El relé esta conectado al pin 8
-#define DEBUG 1 //Modo depuracion
+#define DEBUG 0 //Modo depuracion
 #define TRIGGER_US1 9 // El trigger del ultrasonidos 1 está conectado al pin 7
 #define ECHO_US1 6 //El echo del ultrasonidos 1 está conectado al pin 6
 #define TRIGGER_US2 5 //El trigger del ultrasonidos 2 está conectado al pin 5
@@ -14,6 +17,7 @@
 
 NewPing ultra1(TRIGGER_US1, ECHO_US1, 15);
 NewPing ultra2(TRIGGER_US2, ECHO_US2, 15);
+LiquidCrystal_I2C lcd(0x27,16,2);
 
 int nivelLuz = 0;
 int distanciaUS1 = 0;
@@ -27,6 +31,12 @@ void setup() {
   pinMode(ECHO_US1, INPUT);
   pinMode(ECHO_US2, INPUT);
   Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(2,0);
+  lcd.print("PUENTE DE LA"); 
+  lcd.setCursor(6, 1);
+  lcd.print("PEPA");
 }
 
 void leerluz(){ 
@@ -48,7 +58,7 @@ void leerultrasonidos1(){ //Lee si hay un coche bajo el ultrasonidos numero 1
     Serial.print(distanciaUS1); // obtener el valor en cm (0 = fuera de rango)
     Serial.println(" cm. SENSOR 1");  
   }
-  if (distanciaUS1 < 10){
+  if (distanciaUS1 < 9){
     Serial.println("Coche bajo sensor 1. Comienza medicion.");
     comenzarmedicion(1);  
   }
@@ -60,7 +70,7 @@ void leerultrasonidos2(){ //Lee si hay un coche bajo el ultrasonidos numero 2
     Serial.print(distanciaUS2); // obtener el valor en cm (0 = fuera de rango)
     Serial.println(" cm. SENSOR 2");  
   }
-  if (distanciaUS2 < 10){
+  if (distanciaUS2 < 9){
     Serial.println("Coche bajo sensor 2. Comienza medicion.");
     comenzarmedicion(2);  
   }
@@ -69,6 +79,11 @@ void leerultrasonidos2(){ //Lee si hay un coche bajo el ultrasonidos numero 2
 void comenzarmedicion(int disp){//Comienza a contar el tiempo cuando hay un coche bajo uno de los dos sensores
   int milliscomienzo = millis(); //Guarda el tiempo en el que pasó el primer coche
   int millisfinal = 0; //Variable para almacenar el tiempo en el que pasa por el segundo coche.
+  lcd.clear();
+  lcd.setCursor(4,0);
+  lcd.print("MIDIENDO");
+  lcd.setCursor(2,1);
+  lcd.print("VELOCIDAD...");
   if (disp == 1){
     while (distanciaUS2 > 8 && distanciaUS2 > 2){
       distanciaUS2 = ultra2.ping_cm();
@@ -78,6 +93,7 @@ void comenzarmedicion(int disp){//Comienza a contar el tiempo cuando hay un coch
       }
     }  
     millisfinal = millis();
+    calcularvelocidad(milliscomienzo, millisfinal);
   }
   if (disp == 2){
     while (distanciaUS1 > 8 && distanciaUS1 > 2){
@@ -93,6 +109,8 @@ void comenzarmedicion(int disp){//Comienza a contar el tiempo cuando hay un coch
 }
 
 void calcularvelocidad(int millisinicio, int millisfinal){
+  lcd.clear();
+  lcd.print("VELOCIDAD ACTUAL");
   int millisempleados = 0;
   Serial.println(millisfinal);
   Serial.println(millisinicio);
@@ -103,9 +121,15 @@ void calcularvelocidad(int millisinicio, int millisfinal){
   velocidad = 40000 / millisempleados;
   int velocidadkmh = velocidad * 3.6;
   Serial.println("VELOCIDAD EN KM/H: ");
-  Serial.println(velocidadenkm);
-
+  Serial.println(velocidadkmh);
+  Serial.println("---------------------------------------------------");
+  lcd.setCursor(5, 1);
+  lcd.print(velocidadkmh);
+  lcd.setCursor(8, 1);
+  lcd.print(" km/h");
+  delay(2000);
 }
+
 
 void loop() {
   leerluz();
