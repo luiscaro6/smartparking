@@ -1,7 +1,7 @@
 
 /*+++++++++++++++++++++++++++++++++
 +   PROYECTO PUENTE DE LA PEPA    +
-+ Ultima modificación: 14/06/2022 +
++ Ultima modificación: 15/06/2022 +
 ++++++++++++++++++++++++++++++++++*/
 
 #include <NewPing.h>
@@ -17,8 +17,8 @@
 #define TRIGGER_US2 5 //El trigger del ultrasonidos 2 está conectado al pin 5
 #define ECHO_US2 10 //El echo del ultrasonidos 2 está conectado al pin 4
 
-NewPing ultra1(TRIGGER_US1, ECHO_US1, 15); //Crea clase ultra1 con los parámetros del ultrasonidos 1
-NewPing ultra2(TRIGGER_US2, ECHO_US2, 15); //Crea clase ultra2 con los parámetros del ultrasonidos 2
+NewPing ultra1(TRIGGER_US1, ECHO_US1, 10); //Crea clase ultra1 con los parámetros del ultrasonidos 1
+NewPing ultra2(TRIGGER_US2, ECHO_US2, 10); //Crea clase ultra2 con los parámetros del ultrasonidos 2
 LiquidCrystal_I2C lcd(0x27,16,2); //Crea clase lcd con los parámetros y dirección I2C de la pantalla LCD
 
 int nivelLuz = 0;
@@ -60,7 +60,7 @@ void leerultrasonidos1(){ //Lee si hay un coche bajo el ultrasonidos numero 1
     Serial.print(distanciaUS1); // obtener el valor en cm (0 = fuera de rango)
     Serial.println(" cm. SENSOR 1");  
   }
-  if (distanciaUS1 < 9){
+  if (distanciaUS1 < 9 && distanciaUS1 > 4){
     Serial.println("Coche bajo sensor 1. Comienza medicion.");
     comenzarmedicion(1);  
   }
@@ -72,7 +72,7 @@ void leerultrasonidos2(){ //Lee si hay un coche bajo el ultrasonidos numero 2
     Serial.print(distanciaUS2); // obtener el valor en cm (0 = fuera de rango)
     Serial.println(" cm. SENSOR 2");  
   }
-  if (distanciaUS2 < 9){
+  if (distanciaUS2 < 9 && distanciaUS2 > 4){
     Serial.println("Coche bajo sensor 2. Comienza medicion.");
     comenzarmedicion(2);  
   }
@@ -87,7 +87,7 @@ void comenzarmedicion(int disp){//Comienza a contar el tiempo cuando hay un coch
   lcd.setCursor(2,1);
   lcd.print("VELOCIDAD...");
   if (disp == 1){
-    while (distanciaUS2 > 8 && distanciaUS2 > 2){ //Espera hasta que haya un objeto bajo el otro sensor, obviando los dos primeros cm para evitar errores de medición.
+    while (distanciaUS2 > 8 && distanciaUS2 > 4){ //Espera hasta que haya un objeto bajo el otro sensor, obviando los dos primeros cm para evitar errores de medición.
       distanciaUS2 = ultra2.ping_cm(); 
       if (DEBUG == 1){
         Serial.print(distanciaUS2); // obtener el valor en cm (0 = fuera de rango)
@@ -98,7 +98,7 @@ void comenzarmedicion(int disp){//Comienza a contar el tiempo cuando hay un coch
     calcularvelocidad(milliscomienzo, millisfinal); 
   }
   if (disp == 2){
-    while (distanciaUS1 > 8 && distanciaUS1 > 2){ //Espera hasta que haya un objeto bajo el otro sensor, obviando los dos primeros cm para evitar errores de medición.
+    while (distanciaUS1 > 8 && distanciaUS1 > 4){ //Espera hasta que haya un objeto bajo el otro sensor, obviando los dos primeros cm para evitar errores de medición.
       distanciaUS1 = ultra1.ping_cm();
       if (DEBUG == 1){
         Serial.print(distanciaUS1); // obtener el valor en cm (0 = fuera de rango)
